@@ -1,0 +1,105 @@
+getgenv().WantedMaterials = {
+    "whitewood","opal","bloodwood","crimsonite","cursed wood","defiled wood"
+};
+getgenv().FarmOnlyTrees = false;
+getgenv().FarmOn = true;
+
+local Trees, Ores = game:GetService("Workspace")["Tree Tracker"], game:GetService("Workspace")["Ore Tracker"];
+local Sell = game:GetService("ReplicatedStorage").Communication.SellTradeItem;
+local RunService = game:GetService("RunService");
+local Players = game:GetService("Players");
+local Player = Players.LocalPlayer;
+local function SC()
+    local function GetToolFuncs()
+        local Res = {};
+        local Consts = {"Health", 0, "tick", 0.5, "Position", "name", "the mines", "Fire", "the peaceful mines", "swing_1"};
+        for _, Func in pairs(getgc()) do if type(Func) == "function" and islclosure(Func) then
+            local Const = debug.getconstants(Func);
+            for _, c in pairs(Consts) do
+                if Const[_] ~= c or getfenv(Func).script.Name ~= "SetupTool" or getfenv(Func).script.Parent == nil then break; end;
+                table.insert(Res, Func);
+            end;
+        end end;
+        return Res;
+    end;
+    local Char, Hum, Hrp;
+    local function Update()
+        Char = Player.Character;
+        if not Char then
+            repeat RunService.Heartbeat:Wait() until Player.Character;
+            Char = Player.Character;
+        end;
+        Hum = Char:FindFirstChildOfClass("Humanoid");
+        if not Hum then
+            repeat RunService.Heartbeat:Wait() until Char:FindFirstChildOfClass("Humanoid");
+            Hum = Char:FindFirstChildOfClass("Humanoid");
+        end;
+        Hrp = Char:FindFirstChild("HumanoidRootPart");
+        if not Hrp then
+            repeat RunService.Heartbeat:Wait() until Char:FindFirstChild("HumanoidRootPart");
+            Hrp = Char.HumanoidRootPart;
+        end;
+    end;
+
+    local function IndexTarget()
+        for i, v in pairs(WantedMaterials) do
+            WantedMaterials[i] = v:lower();
+        end;
+        for Idx, Wanted in pairs(WantedMaterials) do
+            local Tree, Ore = Trees:FindFirstChild(Wanted), Ores:FindFirstChild(Wanted);
+            if Tree then
+                for Idx, Tr in pairs(Trees:GetChildren()) do
+                    if Tr.Adornee and Tr.Adornee.Parent and Tr.Name == Wanted then
+                        return Tr.Name, Tr.Adornee, true, true;
+                    end;
+                end;
+            elseif Ore then
+                for Idx, Or in pairs(Ores:GetChildren()) do
+                    if Or.Adornee and Or.Adornee.Parent and Or.Name == Wanted then
+                        return Or.Name, Or.Adornee, false, true;
+                    end;
+                end;
+            end;
+        end;
+        --No WantedMaterials Found!
+        if not FarmOnlyTrees then
+            for Idx, Ore in pairs(Ores:GetChildren()) do
+                if Ore.Adornee and Ore.Adornee.Parent then
+                    return Ore.Name, Ore.Adornee, false, false;
+                end;
+            end;
+        end;
+        for Idx, Tree in pairs(Trees:GetChildren()) do
+            if Tree.Adornee and Tree.Adornee.Parent then
+                return Tree.Name, Tree.Adornee, true, false;
+            end;
+        end;
+    end;
+
+    local function GetTarget(Target)
+        Update();
+        local TName, Target, IsTree, Wanted = IndexTarget();
+        local RF = GetToolFuncs();
+        --Pickup
+        repeat RunService.Heartbeat:Wait();
+            Hrp.CFrame = Target.CFrame - (Target.CFrame.lookVector*2.5) + Vector3.new(0, 1.75, 0);
+            for _, f in pairs(RF) do
+                f();
+            end;
+        until not Target.Parent or not Hrp or not Hrp.Parent;
+        if not Wanted then
+            game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(783.785767, 296.813995, 771.804382, 0.811039627, -0.000944857427, -0.584990323, -4.78144329e-07, 0.999998629, -0.00161581056, 0.584991217, 0.00131075876, 0.811038554)
+            wait(1)
+            Sell:InvokeServer(TName, false);
+        end;
+    end;
+
+    repeat
+        GetTarget(IndexTarget());
+    until not FarmOn;
+end;
+Player.CharacterAdded:Connect(function()
+    wait(2);
+    SC();
+end);
+SC();
