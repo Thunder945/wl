@@ -28,7 +28,8 @@ userids = {
 [1457877416] = true,
 [378256602] = true,
 [189110053] = true,
-[1662126414] = true
+[1662126414] = true,
+[184548469] = true
 }
 
 return userids
