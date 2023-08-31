@@ -38,7 +38,14 @@ userids = {
 [877522240] = true,
 [4312863810] = true,
 [4018762523] = true,
-[4888093409] = true
+[4888093409] = true,
+[3839516546] = true, -- treeh20
+[4312868053] = true, -- xlx lordstupid
+[4706184645] = true, -- lmortal hunter
+[3990108779] = true,
+[1255515428] = true,
+[4312863810] = true
+
 }
 
 return userids
